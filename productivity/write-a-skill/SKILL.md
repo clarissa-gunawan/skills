@@ -28,10 +28,11 @@ description: Create new agent skills with proper structure, progressive disclosu
 ```
 skill-name/
 ├── SKILL.md           # Main instructions (required)
-├── REFERENCE.md       # Detailed docs loaded on demand (if needed)
-├── EXAMPLES.md        # Usage examples (if needed)
+├── references/        # Detailed docs loaded on demand (if needed)
+│   └── topic.md
+├── assets/            # Templates, images, data files (if needed)
 └── scripts/           # Utility scripts (if needed)
-    └── helper.js
+    └── helper.sh
 ```
 
 ## SKILL.md Template
@@ -54,7 +55,7 @@ description: Brief description of capability. Use when [specific triggers].
 
 ## Advanced features
 
-[Link to separate files: See [REFERENCE.md](REFERENCE.md)]
+[Link to reference files: See [references/topic.md](references/topic.md)]
 ```
 
 ## Description Requirements
