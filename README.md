@@ -20,6 +20,7 @@ bash scripts/list-skills.sh
 
 ```
 productivity/     # communication and workflow skills
+engineering/      # code and technical workflow skills
 scripts/          # install and utility scripts
 ```
 
