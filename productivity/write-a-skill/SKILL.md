@@ -28,7 +28,7 @@ description: Create new agent skills with proper structure, progressive disclosu
 ```
 skill-name/
 ├── SKILL.md           # Main instructions (required)
-├── REFERENCE.md       # Detailed docs (if needed)
+├── REFERENCE.md       # Detailed docs loaded on demand (if needed)
 ├── EXAMPLES.md        # Usage examples (if needed)
 └── scripts/           # Utility scripts (if needed)
     └── helper.js
@@ -101,7 +101,7 @@ Scripts save tokens and improve reliability vs generated code.
 
 Split into separate files when:
 
-- SKILL.md exceeds 100 lines
+- SKILL.md exceeds 500 lines
 - Content has distinct domains (finance vs sales schemas)
 - Advanced features are rarely needed
 
@@ -110,8 +110,10 @@ Split into separate files when:
 After drafting, verify:
 
 - [ ] Description includes triggers ("Use when...")
-- [ ] SKILL.md under 100 lines
+- [ ] SKILL.md under 500 lines
 - [ ] No time-sensitive info
 - [ ] Consistent terminology
 - [ ] Concrete examples included
 - [ ] References one level deep
+- [ ] Category README.md updated
+- [ ] Top-level README.md updated
