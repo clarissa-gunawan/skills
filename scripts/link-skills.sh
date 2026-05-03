@@ -7,7 +7,7 @@ CLAUDE_DIR="$HOME/.claude/skills"
 
 # Color support
 use_color=0
-if [ -t 1 ] && [ -z "$NO_COLOR" ] && [ "${TERM:-}" != "dumb" ]; then
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != "dumb" ]; then
   use_color=1
 fi
 
