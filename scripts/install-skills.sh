@@ -17,23 +17,32 @@ bold()   { [ $use_color -eq 1 ] && printf "\033[1m%s\033[0m" "$1"  || printf "%s
 dim()    { [ $use_color -eq 1 ] && printf "\033[2m%s\033[0m" "$1"  || printf "%s" "$1"; }
 
 dry_run=0
+quiet=0
 
 usage() {
   echo "Usage: $(basename "$0") [options]"
+  echo ""
+  echo "Examples:"
+  echo "  $(basename "$0")            Install all skills"
+  echo "  $(basename "$0") --dry-run  Preview what would be installed"
   echo ""
   echo "Copies all skills into ~/.agents/skills/ and ~/.claude/skills/"
   echo "Existing skills are always overwritten."
   echo ""
   echo "Options:"
-  echo "  -n, --dry-run   Show what would be installed without making changes"
-  echo "  -h, --help      Show this help"
+  echo "  -n, --dry-run    Show what would be installed without making changes"
+  echo "  -q, --quiet      Only print summary, suppress per-skill output"
+  echo "  --no-color       Disable colored output"
+  echo "  -h, --help       Show this help"
 }
 
 for arg in "$@"; do
   case $arg in
     -n|--dry-run) dry_run=1 ;;
-    -h|--help) usage; exit 0 ;;
-    *) printf "%s\n" "$(red "Error:") Unknown option: $arg" >&2; usage >&2; exit 1 ;;
+    -q|--quiet)   quiet=1 ;;
+    --no-color)   use_color=0 ;;
+    -h|--help)    usage; exit 0 ;;
+    *) printf "%s\n" "$(red "Error:") Unknown option: $arg. Run $(basename "$0") --help for usage." >&2; exit 1 ;;
   esac
 done
 
@@ -55,9 +64,11 @@ while IFS= read -r skill_md; do
   skill_name="$(basename "$skill_dir")"
 
   if [ $dry_run -eq 1 ]; then
-    printf "  Would install: "
-    bold "$skill_name"
-    printf "\n"
+    if [ $quiet -eq 0 ]; then
+      printf "  Would install: "
+      bold "$skill_name"
+      printf "\n"
+    fi
   else
     rm -rf "${AGENTS_DIR:?}/$skill_name" "${CLAUDE_DIR:?}/$skill_name"
     cp -r "$skill_dir" "$AGENTS_DIR/$skill_name" || {
@@ -68,9 +79,11 @@ while IFS= read -r skill_md; do
       printf "%s\n" "$(red "Error:") Failed to copy $skill_name to $CLAUDE_DIR." >&2
       exit 1
     }
-    printf "  %s " "$(green "✓")"
-    bold "$skill_name"
-    printf "\n"
+    if [ $quiet -eq 0 ]; then
+      printf "  %s " "$(green "✓")"
+      bold "$skill_name"
+      printf "\n"
+    fi
   fi
 
   installed=$((installed + 1))
