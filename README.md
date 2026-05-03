@@ -19,9 +19,10 @@ bash scripts/list-skills.sh
 ## Structure
 
 ```
-productivity/     # communication and workflow skills
-engineering/      # code and technical workflow skills
-scripts/          # install and utility scripts
+skills/
+├── productivity/     # communication and workflow skills
+└── engineering/      # code and technical workflow skills
+scripts/              # install and utility scripts
 ```
 
 ## Adding a new skill
