@@ -5,10 +5,10 @@ Personal agent skills library. Works with Claude Code and any [Agent Skills](htt
 ## Install
 
 ```bash
-bash scripts/link-skills.sh
+bash scripts/install-skills.sh
 ```
 
-This symlinks all skills into `~/.agents/skills/` and `~/.claude/skills/`.
+Copies all skills into `~/.agents/skills/` and `~/.claude/skills/`. Re-run after pulling updates.
 
 ## List available skills
 

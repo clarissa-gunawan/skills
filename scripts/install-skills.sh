@@ -21,10 +21,11 @@ dry_run=0
 usage() {
   echo "Usage: $(basename "$0") [options]"
   echo ""
-  echo "Symlinks all skills into ~/.agents/skills/ and ~/.claude/skills/"
+  echo "Copies all skills into ~/.agents/skills/ and ~/.claude/skills/"
+  echo "Existing skills are always overwritten."
   echo ""
   echo "Options:"
-  echo "  -n, --dry-run   Show what would be linked without making changes"
+  echo "  -n, --dry-run   Show what would be installed without making changes"
   echo "  -h, --help      Show this help"
 }
 
@@ -32,7 +33,7 @@ for arg in "$@"; do
   case $arg in
     -n|--dry-run) dry_run=1 ;;
     -h|--help) usage; exit 0 ;;
-    *) printf "%s\n" "$(red "Unknown option: $arg")" >&2; usage >&2; exit 1 ;;
+    *) printf "%s\n" "$(red "Error:") Unknown option: $arg" >&2; usage >&2; exit 1 ;;
   esac
 done
 
@@ -47,23 +48,24 @@ if [ $dry_run -eq 0 ]; then
   }
 fi
 
-linked=0
+installed=0
 
 while IFS= read -r skill_md; do
   skill_dir="$(dirname "$skill_md")"
   skill_name="$(basename "$skill_dir")"
 
   if [ $dry_run -eq 1 ]; then
-    printf "  Would link: "
+    printf "  Would install: "
     bold "$skill_name"
     printf "\n"
   else
-    ln -sfn "$skill_dir" "$AGENTS_DIR/$skill_name" || {
-      printf "%s\n" "$(red "Error:") Failed to link $skill_name to $AGENTS_DIR. Check permissions." >&2
+    rm -rf "${AGENTS_DIR:?}/$skill_name" "${CLAUDE_DIR:?}/$skill_name"
+    cp -r "$skill_dir" "$AGENTS_DIR/$skill_name" || {
+      printf "%s\n" "$(red "Error:") Failed to copy $skill_name to $AGENTS_DIR." >&2
       exit 1
     }
-    ln -sfn "$skill_dir" "$CLAUDE_DIR/$skill_name" || {
-      printf "%s\n" "$(red "Error:") Failed to link $skill_name to $CLAUDE_DIR. Check permissions." >&2
+    cp -r "$skill_dir" "$CLAUDE_DIR/$skill_name" || {
+      printf "%s\n" "$(red "Error:") Failed to copy $skill_name to $CLAUDE_DIR." >&2
       exit 1
     }
     printf "  %s " "$(green "✓")"
@@ -71,21 +73,21 @@ while IFS= read -r skill_md; do
     printf "\n"
   fi
 
-  linked=$((linked + 1))
-done < <(find "$REPO_ROOT" -name "SKILL.md" -not -path "*/scripts/*")
+  installed=$((installed + 1))
+done < <(find "$REPO_ROOT" -name "SKILL.md" -not -path "*/scripts/*" | sort)
 
-if [ $linked -eq 0 ]; then
-  printf "%s\n" "$(red "No skills found in $REPO_ROOT")" >&2
+if [ $installed -eq 0 ]; then
+  printf "%s\n" "$(red "Error:") No skills found in $REPO_ROOT" >&2
   exit 1
 fi
 
 echo ""
 
 if [ $dry_run -eq 1 ]; then
-  dim "$linked skill(s) would be linked"
+  dim "$installed skill(s) would be installed"
   echo ""
 else
-  bold "$linked skill(s) linked"
+  bold "$installed skill(s) installed"
   printf " to %s and %s\n" "$AGENTS_DIR" "$CLAUDE_DIR"
   echo ""
   printf "Run "
