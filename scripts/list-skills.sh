@@ -52,60 +52,58 @@ wrap_text() {
   fi
 }
 
-declare -A category_skills
-categories=()
+# Collect skills into parallel arrays. `find | sort` groups by category
+# (path-sorted), so we can walk once and detect category transitions.
+names=()
+descs=()
+cats=()
 
 while IFS= read -r skill_md; do
-  skill_name="$(basename "$(dirname "$skill_md")")"
-  category="$(basename "$(dirname "$(dirname "$skill_md")")")"
-  description=$(awk '/^description:/{found=1; sub(/^description:[[:space:]]*/,""); print; next} found && /^[^[:space:]]/{exit} found{print}' "$skill_md" | tr -d '\n' | sed 's/^[[:space:]]*//')
-
-  if [[ -z "${category_skills[$category]+x}" ]]; then
-    categories+=("$category")
-    category_skills[$category]=""
-  fi
-  category_skills[$category]+="$skill_name|$description"$'\n'
+  names+=("$(basename "$(dirname "$skill_md")")")
+  cats+=("$(basename "$(dirname "$(dirname "$skill_md")")")")
+  descs+=("$(awk '/^description:/{found=1; sub(/^description:[[:space:]]*/,""); print; next} found && /^[^[:space:]]/{exit} found{print}' "$skill_md" | tr -d '\n' | sed 's/^[[:space:]]*//')")
 done < <(find "$REPO_ROOT" -name "SKILL.md" -not -path "*/scripts/*" | sort)
 
-if [ ${#categories[@]} -eq 0 ]; then
+total=${#names[@]}
+
+if [ $total -eq 0 ]; then
   printf "No skills found.\n" >&2
   exit 1
 fi
 
 echo ""
 
-for category in "${categories[@]}"; do
-  printf "  "
-  bold "$category"
-  echo ""
+prev_cat=""
+for i in "${!names[@]}"; do
+  skill_name="${names[$i]}"
+  description="${descs[$i]}"
+  cat="${cats[$i]}"
+  next_cat="${cats[$((i+1))]:-}"
 
-  entries=()
-  while IFS= read -r entry; do
-    [ -n "$entry" ] && entries+=("$entry")
-  done <<< "${category_skills[$category]}"
-
-  total=${#entries[@]}
-  for i in "${!entries[@]}"; do
-    entry="${entries[$i]}"
-    skill_name="${entry%%|*}"
-    description="${entry#*|}"
-
-    if [ $((i + 1)) -lt $total ]; then
-      prefix="  ├── "
-    else
-      prefix="  └── "
-    fi
-
-    # indent for continuation lines aligns after prefix + name + separator
-    desc_start=$((${#prefix} + ${#skill_name} + 2))
-    indent="$(printf '%*s' "$desc_start" '')"
-    available=$((term_width - desc_start))
-
-    printf "%s" "$prefix"
-    bold "$skill_name"
+  if [ "$cat" != "$prev_cat" ]; then
+    [ -n "$prev_cat" ] && echo ""
     printf "  "
-    wrap_text "$description" "$available" "$indent"
-  done
+    bold "$cat"
+    echo ""
+  fi
 
-  echo ""
+  if [ "$cat" != "$next_cat" ]; then
+    prefix="  └── "
+  else
+    prefix="  ├── "
+  fi
+
+  # indent for continuation lines aligns after prefix + name + separator
+  desc_start=$((${#prefix} + ${#skill_name} + 2))
+  indent="$(printf '%*s' "$desc_start" '')"
+  available=$((term_width - desc_start))
+
+  printf "%s" "$prefix"
+  bold "$skill_name"
+  printf "  "
+  wrap_text "$description" "$available" "$indent"
+
+  prev_cat="$cat"
 done
+
+echo ""
