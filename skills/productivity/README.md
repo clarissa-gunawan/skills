@@ -10,3 +10,5 @@ General workflow tools, not code-specific.
 
 - **[research](./research/SKILL.md)** — "Research a topic using reputable sources, synthesise into a readable reference document, and discuss findings."
 
+- **[pr-update](./pr-update/SKILL.md)** — "Compile a work update from your recent GitHub PRs (including co-authored ones) and DM it to yourself on Slack, continuing from the previous update."
+
